@@ -65,9 +65,9 @@ def get_args_parser():
                         default=0,
                         type=int,
                         help='number of distributed processes')
-    parser.add_argument('--local_rank',
-                        type=int,
-                        help='local rank for DistributedDataParallel')
+    # parser.add_argument('--local_rank',
+    #                     type=int,
+    #                     help='local rank for DistributedDataParallel')
     parser.add_argument('--amp',
                         action='store_true',
                         help='Train with mixed precision')
@@ -132,7 +132,7 @@ def main(args):
         logger.info('Full config saved to {}'.format(save_json_path))
     logger.info('world size: {}'.format(args.world_size))
     logger.info('rank: {}'.format(args.rank))
-    logger.info('local_rank: {}'.format(args.local_rank))
+    # logger.info('local_rank: {}'.format(args.local_rank))
     logger.info('args: ' + str(args) + '\n')
 
     if args.frozen_weights is not None:

@@ -5,7 +5,8 @@ OUTPUT_DIR=$3
 NUM_PERSON=${4:-1}
 THRESHOLD=${5:-0.3}
 GPU_NUM=${6:-8}
-python -m torch.distributed.launch \
+# python -m torch.distributed.launch \
+torchrun \
     --nproc_per_node ${GPU_NUM} \
     main.py \
     -c "config/aios_smplx_demo.py" \

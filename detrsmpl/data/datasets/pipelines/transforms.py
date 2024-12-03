@@ -1,6 +1,6 @@
 import math
 import random
-from collections import Iterable
+from collections.abc import Iterable
 
 import cv2
 import mmcv
