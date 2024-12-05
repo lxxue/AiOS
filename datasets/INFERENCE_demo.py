@@ -136,14 +136,44 @@ class INFERENCE_demo(torch.utils.data.Dataset):
                     person_idx = last_person_idx + 1
 
                 save_name += '_personId_' + str(person_idx) + '.obj'
-                save_obj(osp.join(self.mesh_path, save_name), vert, faces=torch.tensor(self.body_model.faces.astype(np.int32)))
+                # save_obj(osp.join(self.mesh_path, save_name), vert, faces=torch.tensor(self.body_model.faces.astype(np.int32)))
             
             if i == 0:
                 save_name = img_paths[ann_idx].split('/')[-1][:-4]
                 cv2.imwrite(os.path.join(self.result_img_dir,img_paths[ann_idx].split('/')[-1]), img)
             else:
-                verts = out['smpl_verts'][:i] + out['cam_trans'][:i][:, None] 
-                img = mmcv.imshow_bboxes(img, body_bbox[:i], show=False, colors='green') 
+                # verts = out['smpl_verts'][:i] + out['cam_trans'][:i][:, None] 
+                # img = mmcv.imshow_bboxes(img, body_bbox[:i], show=False, colors='green') 
+                verts = out['smpl_verts'][:self.num_person] + out['cam_trans'][:self.num_person][:, None]
+                self.result_param_dir = self.result_img_dir + '/../params/'
+                os.makedirs(self.result_param_dir, exist_ok=True)
+                concat_pose_params = np.concatenate(
+                    [
+                        out['smplx_root_pose'][:self.num_person][0].detach().cpu().numpy(),
+                        out['smplx_body_pose'][:self.num_person][0].detach().cpu().numpy(),
+                        out['smplx_lhand_pose'][:self.num_person][0].detach().cpu().numpy(),
+                        out['smplx_rhand_pose'][:self.num_person][0].detach().cpu().numpy(),
+                        out['cam_trans'][:self.num_person][0].detach().cpu().numpy(),
+                        out['smplx_expr'][:self.num_person][0].detach().cpu().numpy(),
+                        out['smplx_jaw_pose'][:self.num_person][0].detach().cpu().numpy(),
+                    ]
+                )
+                shape = out['smplx_shape'][:self.num_person][0].detach().cpu().numpy()
+                frame_id = int(img_paths[ann_idx].split('/')[-1].split('.')[0])
+                np.savetxt(f"{self.result_param_dir}/pose-{frame_id:06d}.txt", concat_pose_params)
+                np.savetxt(f"{self.result_param_dir}/shape-{frame_id:06d}.txt", shape)
+
+                extr_outputs = {
+                    'H': out['img_shape'][0].cpu().numpy().tolist(),
+                    'W': out['img_shape'][1].cpu().numpy().tolist(),
+                    'body_bbox': out['body_bbox'][:self.num_person][0].cpu().numpy(),
+                    'cam_trans': out['cam_trans'][:self.num_person][0].cpu().numpy(),
+                    'smpl_cam': out['smpl_cam'][:self.num_person][0].cpu().numpy(),
+                    'smplx_joint_proj': out['smplx_joint_proj'][:self.num_person][0].cpu().numpy()
+                }
+                np.savez(f"{self.result_param_dir}/extr-{frame_id:06d}.npz", **extr_outputs)
+
+                img = mmcv.imshow_bboxes(img, body_bbox[:self.num_person], show=False, colors='green')
                 render_smpl(
                     verts=verts[None],
                     body_model=self.body_model,

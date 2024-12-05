@@ -344,6 +344,23 @@ def inference(model,
 
         dataset.inference(result)
 
+    import glob
+    import cv2
+    shape_paths = glob.glob(f"{dataset.result_param_dir}/shape-*.txt")
+    shape_list = []
+    for shape_path in shape_paths:
+        shape_list.append(np.loadtxt(shape_path))
+    mean_shape = np.array(shape_list).mean(0)
+    if mean_shape.shape[0] == 10:
+        mean_shape = np.pad(mean_shape, (0, 300-mean_shape.shape[0]), mode='constant', constant_values=0)
+    np.savetxt(f"{dataset.result_param_dir}/mean_shape.txt", mean_shape)
+    # img_shape = result[0]['img_shape'].cpu().numpy()[::-1]
+    img_shape = cv2.imread(dataset.img_paths[0]).shape
+    np.save(f"{dataset.result_param_dir}/K_raw.npy", np.array(
+        [[5000, 0, img_shape[1]/2],
+         [0, 5000, img_shape[0]/2],
+         [0, 0, 1]]
+    ))
     if rank == 0 and args.to_vid:
         if hasattr(dataset,'result_img_dir'):
             images_to_video(dataset.result_img_dir, os.path.join(dataset.output_path, dataset.img_name+'_demo.mp4'),remove_raw_file=False, fps=30)

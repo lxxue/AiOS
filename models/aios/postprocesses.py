@@ -1173,6 +1173,7 @@ class PostProcess_SMPLX_Multi_Infer(nn.Module):
                         'smpl_verts': smpl_verts[bs],
                         'image_idx': image_idx[bs],
                         'cam_trans': transl[bs],
+                        'smpl_cam': smpl_cam[bs],
                         'body_bbox': body_boxes[bs],
                         'lhand_bbox': lhand_boxes[bs],
                         'rhand_bbox': rhand_boxes[bs],
