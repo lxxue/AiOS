@@ -77,7 +77,7 @@ def get_args_parser():
 
 
 def build_model_main(args, cfg):
-    print(args.modelname)
+    # print(args.modelname)
     from models.registry import MODULE_BUILD_FUNCS
     assert args.modelname in MODULE_BUILD_FUNCS._module_dict
     build_func = MODULE_BUILD_FUNCS.get(args.modelname)
@@ -88,7 +88,7 @@ def build_model_main(args, cfg):
 
 def main(args):
     utils.init_distributed_mode_ssc(args)
-    print('Loading config file from {}'.format(args.config_file))
+    # print('Loading config file from {}'.format(args.config_file))
     shutil.copy2(args.config_file,'config/aios_smplx.py')
     from config.config import cfg
     
@@ -122,18 +122,18 @@ def main(args):
                           distributed_rank=args.rank,
                           color=False,
                           name='detr')
-    logger.info('git:\n  {}\n'.format(utils.get_sha()))
-    logger.info('Command: ' + ' '.join(sys.argv))
+    # logger.info('git:\n  {}\n'.format(utils.get_sha()))
+    # logger.info('Command: ' + ' '.join(sys.argv))
     if args.rank == 0:
         save_json_path = os.path.join(args.output_dir, 'config_args_all.json')
         # print("args:", vars(args))
         with open(save_json_path, 'w') as f:
             json.dump(vars(args), f, indent=2)
-        logger.info('Full config saved to {}'.format(save_json_path))
-    logger.info('world size: {}'.format(args.world_size))
-    logger.info('rank: {}'.format(args.rank))
+        # logger.info('Full config saved to {}'.format(save_json_path))
+    # logger.info('world size: {}'.format(args.world_size))
+    # logger.info('rank: {}'.format(args.rank))
     # logger.info('local_rank: {}'.format(args.local_rank))
-    logger.info('args: ' + str(args) + '\n')
+    # logger.info('args: ' + str(args) + '\n')
 
     if args.frozen_weights is not None:
         assert args.masks, 'Frozen training is meant for segmentation only'
@@ -168,17 +168,17 @@ def main(args):
         model_without_ddp = model.module
     n_parameters = sum(p.numel() for p in model.parameters()
                        if p.requires_grad)
-    logger.info('number of params:' + str(n_parameters))
-    logger.info('params:\n' + json.dumps(
-        {n: p.numel()
-         for n, p in model.named_parameters() if p.requires_grad},
-        indent=2))
+    # logger.info('number of params:' + str(n_parameters))
+    # logger.info('params:\n' + json.dumps(
+    #     {n: p.numel()
+    #      for n, p in model.named_parameters() if p.requires_grad},
+    #     indent=2))
 
     param_dicts = get_param_dict(args, model_without_ddp)
     optimizer = torch.optim.AdamW(param_dicts,
                                   lr=args.lr,
                                   weight_decay=args.weight_decay)
-    logger.info('Creating dataset...')
+    # logger.info('Creating dataset...')
     if not args.eval:
         trainset= []
         for trainset_i,v in cfg.trainset_partition.items():
@@ -311,7 +311,7 @@ def main(args):
 
         return
 
-    print('Start training')
+    # print('Start training')
     start_time = time.time()
     for epoch in range(args.start_epoch, args.epochs):
         epoch_start_time = time.time()
@@ -376,7 +376,7 @@ def main(args):
 
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
-    print('Training time {}'.format(total_time_str))
+    # print('Training time {}'.format(total_time_str))
 
 
 if __name__ == '__main__':

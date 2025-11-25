@@ -173,7 +173,8 @@ def prepare_output_path(output_path: str,
             raise FileExistsError(
                 f'{output_path} exists (set overwrite = True to overwrite).')
         else:
-            print(f'Overwriting {output_path}.')
+            # print(f'Overwriting {output_path}.')
+            pass
     elif exist_result == Existence.DirectoryExistEmpty:
         pass
     elif exist_result == Existence.DirectoryExistNotEmpty:

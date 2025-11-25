@@ -196,7 +196,7 @@ class BaseRenderer(nn.Module):
             else:
                 self.temp_path = output_path
             mmcv.mkdir_or_exist(self.temp_path)
-            print('Make dir', self.temp_path)
+            # print('Make dir', self.temp_path)
 
     def _update_resolution(self, cameras, **kwargs):
         if isinstance(cameras, MMCamerasBase):

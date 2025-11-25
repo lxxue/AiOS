@@ -53,7 +53,7 @@ class SMPLRenderer(BaseRenderer):
                     Path(output_path).parent,
                     Path(output_path).name + '_output_temp')
                 mmcv.mkdir_or_exist(self.temp_path)
-                print('make dir', self.temp_path)
+                # print('make dir', self.temp_path)
             else:
                 self.temp_path = output_path
 
