@@ -68,7 +68,11 @@ class INFERENCE(torch.utils.data.Dataset):
             if rank == 0:
                 video_to_images(self.img_dir, self.tmp_dir)
             dist.barrier()
-        self.img_paths = sorted(glob(self.tmp_dir+'/*',recursive=True)) 
+        valid_exts = {'.png', '.jpg', '.jpeg', '.bmp'}
+        self.img_paths = sorted([
+            path for path in glob(os.path.join(self.tmp_dir, '*'), recursive=True)
+            if os.path.splitext(path)[1].lower() in valid_exts
+        ])
         self.score_threshold = 0.2
         self.resolution = [720 ,1280] # AGORA test     
         self.format = DefaultFormatBundle()

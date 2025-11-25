@@ -37,7 +37,11 @@ class INFERENCE_demo(torch.utils.data.Dataset):
             use_pca=False,
             use_face_contour=True,
             batch_size = cfg.batch_size)
-        self.body_model = build_body_model(body_model_cfg).to('cuda') 
+        self.body_model = build_body_model(body_model_cfg).to('cuda')
+        # cache SMPL-X faces (CPU tensor) for repeated mesh dumps
+        self.faces_tensor = torch.as_tensor(
+            self.body_model.faces.astype(np.int64),
+            dtype=torch.long)
         
         rank, _ = get_dist_info()
         if self.img_dir.endswith('.mp4'):
@@ -67,7 +71,11 @@ class INFERENCE_demo(torch.utils.data.Dataset):
                 video_to_images(self.img_dir, self.tmp_dir)
             dist.barrier()
         
-        self.img_paths = sorted(glob(self.tmp_dir +'/*',recursive=True))
+        valid_exts = {'.png', '.jpg', '.jpeg', '.bmp'}
+        self.img_paths = sorted([
+            path for path in glob(os.path.join(self.tmp_dir, '*'), recursive=True)
+            if os.path.splitext(path)[1].lower() in valid_exts
+        ])
         
         self.num_person = cfg.num_person if 'num_person' in cfg else 0.1
         self.score_threshold = cfg.threshold if 'threshold' in cfg else 0.1  
@@ -136,7 +144,11 @@ class INFERENCE_demo(torch.utils.data.Dataset):
                     person_idx = last_person_idx + 1
 
                 save_name += '_personId_' + str(person_idx) + '.obj'
-                # save_obj(osp.join(self.mesh_path, save_name), vert, faces=torch.tensor(self.body_model.faces.astype(np.int32)))
+                verts_to_save = vert.detach().cpu()
+                save_obj(
+                    osp.join(self.mesh_path, save_name),
+                    verts_to_save,
+                    faces=self.faces_tensor)
             
             if i == 0:
                 save_name = img_paths[ann_idx].split('/')[-1][:-4]
